@@ -1,0 +1,1 @@
+java -cp "target/PizzaBot.jar:target/libs/*" org.mo.bots.PizzaBot.Main
