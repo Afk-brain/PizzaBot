@@ -1,9 +1,13 @@
 package org.mo.bots.PizzaBot.util;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -41,8 +45,13 @@ public abstract class CommandBot extends TelegramLongPollingBot {
                     }
                 }
             });
+        } else if(update.hasCallbackQuery()) {
+            processCallbackQuery(update.getCallbackQuery());
         }
     }
+
+    protected abstract void processCallbackQuery(CallbackQuery query);
+
 
     protected void sendText(Message message, String text) {
         sendText(message, text, null);
@@ -56,6 +65,29 @@ public abstract class CommandBot extends TelegramLongPollingBot {
                 .build();
         try {
             execute(sendMessage);
+        } catch (TelegramApiException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    protected void editMessage(CallbackQuery query, String text, InlineKeyboardMarkup keyboard) {
+        EditMessageText edit = EditMessageText.builder()
+                .messageId(query.getMessage().getMessageId())
+                .chatId(query.getMessage().getChatId().toString())
+                .replyMarkup(keyboard)
+                .text(text)
+                .build();
+        try {
+            execute(edit);
+        } catch (TelegramApiException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    protected void answerQuery(CallbackQuery query) {
+        AnswerCallbackQuery answer = AnswerCallbackQuery.builder().callbackQueryId(query.getId()).build();
+        try {
+            execute(answer);
         } catch (TelegramApiException exception) {
             exception.printStackTrace();
         }
