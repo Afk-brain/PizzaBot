@@ -9,9 +9,10 @@ public class Main {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
             telegramBotsApi.registerBot(new PizzaBot());
-            System.out.println("BOT INITIALIZED");
+            telegramBotsApi.registerBot(new AdminBot());
+            System.out.println("BOTS INITIALIZED");
         } catch (Exception e) {
-            System.out.println("BOT INITIALIZATION FAILED");
+            System.out.println("BOTS INITIALIZATION FAILED");
             e.printStackTrace();
         }
     }
