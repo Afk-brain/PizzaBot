@@ -5,12 +5,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
 
 public class Strings {
 
     private static Strings instance;
 
-    private final Properties props = new Properties();
+    private static final Properties props = new Properties();
     private final File source = new File("src/main/resources/strings.properties");
 
     public static Strings create() throws IOException{
@@ -28,11 +29,22 @@ public class Strings {
     }
 
     public String get(String key) {
-        return props.getProperty(key);
+        key = key.replaceAll(" ", "_");
+        return props.getProperty(key).replaceAll("_", " ");
+    }
+
+    public Set<String> getAllKeys() {
+        return props.stringPropertyNames();
     }
 
     public boolean set(String key, String value) {
-        props.setProperty(key, value);
+        key = key.replaceAll(" ", "_");
+        value = value.replaceAll(" ", "_");
+        if(props.containsKey(key)) {
+            props.replace(key, value);
+        } else {
+            props.setProperty(key, value);
+        }
         return save();
     }
 
