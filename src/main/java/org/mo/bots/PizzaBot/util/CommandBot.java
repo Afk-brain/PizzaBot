@@ -34,6 +34,7 @@ public abstract class CommandBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        System.out.println(update);
         if(update.hasMessage() && update.getMessage().hasText()) {
             String input = update.getMessage().getText();
             methods.forEach((string, method) -> {
@@ -84,8 +85,8 @@ public abstract class CommandBot extends TelegramLongPollingBot {
         }
     }
 
-    protected void answerQuery(CallbackQuery query) {
-        AnswerCallbackQuery answer = AnswerCallbackQuery.builder().callbackQueryId(query.getId()).build();
+    protected void answerQuery(CallbackQuery query, String text) {
+        AnswerCallbackQuery answer = AnswerCallbackQuery.builder().text(text).callbackQueryId(query.getId()).build();
         try {
             execute(answer);
         } catch (TelegramApiException exception) {

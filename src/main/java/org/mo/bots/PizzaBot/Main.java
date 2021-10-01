@@ -8,8 +8,9 @@ public class Main {
     public static void main(String[] args) {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(new PizzaBot());
-            telegramBotsApi.registerBot(new AdminBot());
+            PizzaBot pizzaBot = new PizzaBot();
+            telegramBotsApi.registerBot(pizzaBot);
+            telegramBotsApi.registerBot(new AdminBot(pizzaBot));
             System.out.println("BOTS INITIALIZED");
         } catch (Exception e) {
             System.out.println("BOTS INITIALIZATION FAILED");

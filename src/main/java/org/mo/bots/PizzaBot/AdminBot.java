@@ -1,9 +1,14 @@
 package org.mo.bots.PizzaBot;
 
+import org.mo.bots.PizzaBot.data.DataProvider;
+import org.mo.bots.PizzaBot.data.PosterProvider;
+import org.mo.bots.PizzaBot.objects.ClientGroup;
+import org.mo.bots.PizzaBot.objects.User;
 import org.mo.bots.PizzaBot.util.BotCommand;
 import org.mo.bots.PizzaBot.util.CommandBot;
 import org.mo.bots.PizzaBot.util.Pager;
 import org.mo.bots.PizzaBot.util.Strings;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -16,22 +21,29 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AdminBot extends CommandBot {
 
     private static final String redactPagerName = "redact";
+    private static final String clientsGroupPagerName = "client";
     private Pager redactPager;
+    private Pager clientsGroupPager;
     private Strings strings;
     private Map<Long, String> sessions = new HashMap<>();
+    private DataProvider dataProvider = new PosterProvider();
+    private PizzaBot sender;
 
-    public AdminBot() throws IOException {
+    public AdminBot(PizzaBot sender) throws IOException {
+        this.sender = sender;
         strings = Strings.create();
         Set<String> set = strings.getAllKeys();
         redactPager = Pager.createPager(redactPagerName, set.stream().toList(), 5, "red");
+        List<String> groups = new ArrayList<>();
+        for(ClientGroup group : dataProvider.getClientGroups()) {
+            groups.add(group.client_groups_name + " " + group.client_groups_id);
+        }
+        clientsGroupPager = Pager.createPager(clientsGroupPagerName, groups, 5, "clig");
     }
 
     @Override
@@ -40,6 +52,8 @@ public class AdminBot extends CommandBot {
             String status = sessions.getOrDefault(update.getMessage().getChatId(), "0");
             if(status.startsWith("1")) {
                 finishRedact(update.getMessage(), status.substring(1), update.getMessage().getText());
+            } else if(status.startsWith("2")) {
+                finishMail(update.getMessage(), status.substring(1));
             }
         }
         super.onUpdateReceived(update);
@@ -50,6 +64,7 @@ public class AdminBot extends CommandBot {
         ReplyKeyboardMarkup keyboard = ReplyKeyboardMarkup.builder()
                 .resizeKeyboard(true)
                 .keyboardRow(createKeyboardRow("Редагуваня повідомлень\uD83D\uDCDD"))
+                .keyboardRow(createKeyboardRow("Розсилка\uD83D\uDCE7"))
                 .build();
         sendText(message, "Виберіть опцію", keyboard);
     }
@@ -59,6 +74,11 @@ public class AdminBot extends CommandBot {
         sendText(message, "Оберіть що змінити", redactPager.getPage(0));
     }
 
+    @BotCommand("Розсилка\uD83D\uDCE7")
+    public void mail(Message message) {
+        sendText(message, "Оберіть групу клієнтів", clientsGroupPager.getPage(0));
+    }
+
     private void redact(Message message, String stringName) {
         sessions.put(message.getChatId(), "1" + stringName);
         InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
@@ -66,9 +86,37 @@ public class AdminBot extends CommandBot {
         sendText(message, stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
     }
 
+    private void mailTo(Message message, String group) {
+        sessions.put(message.getChatId(), "2" + group);
+        InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
+        builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back").text("Назад").build()));
+        sendText(message, "Введіть текст для розсилки групі " + group, builder.build());
+    }
+
     private void finishRedact(Message message, String stringName, String newValue) {
         strings.set(stringName, newValue);
         sendText(message, "Успішно відредаговано");
+        sessions.remove(message.getChatId());
+    }
+
+    private void finishMail(Message message, String group) {
+        String[] parts = group.split(" ");
+        String idString = parts[parts.length - 1];
+        long id = Long.parseLong(idString);
+        List<User> users = dataProvider.getUsersInGroup(id);
+        for(User user : users) {
+            System.out.println(user.chatId + " idddd");
+            SendMessage sendMessage = SendMessage.builder()
+                    .chatId(user.chatId + "")
+                    .text(message.getText())
+                    .build();
+            try {
+                sender.execute(sendMessage);
+            } catch (TelegramApiException exception) {
+                exception.printStackTrace();
+            }
+        }
+        sendText(message, "Успішно надіслано");
         sessions.remove(message.getChatId());
     }
 
@@ -88,10 +136,15 @@ public class AdminBot extends CommandBot {
             data = data.substring(1);
             if(data.startsWith("red")) {
                 editMessage(query,"Оберіть що змінити", redactPager.getPage(Integer.parseInt(data.substring(3))));
+            } else if(data.startsWith("clig")) {
+                editMessage(query,"Оберіть групу клієнтів", redactPager.getPage(Integer.parseInt(data.substring(3))));
             }
         } else if(data.startsWith("red")) {
             data = data.substring(3);
             redact(query.getMessage(), data);
+        } else if(data.startsWith("clig")) {
+            data = data.substring(4);
+            mailTo(query.getMessage(), data);
         } else if(data.equals("Back")) {
             DeleteMessage deleteMessage = DeleteMessage.builder().messageId(query.getMessage().getMessageId())
                     .chatId(query.getMessage().getChatId() + "").build();
@@ -101,7 +154,7 @@ public class AdminBot extends CommandBot {
                 e.printStackTrace();
             }
         }
-        answerQuery(query);
+        answerQuery(query, "");
     }
 
     @Override
