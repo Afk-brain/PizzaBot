@@ -71,10 +71,10 @@ public abstract class CommandBot extends TelegramLongPollingBot {
         }
     }
 
-    protected void editMessage(CallbackQuery query, String text, InlineKeyboardMarkup keyboard) {
+    protected void editMessage(Message message, String text, InlineKeyboardMarkup keyboard) {
         EditMessageText edit = EditMessageText.builder()
-                .messageId(query.getMessage().getMessageId())
-                .chatId(query.getMessage().getChatId().toString())
+                .messageId(message.getMessageId())
+                .chatId(message.getChatId().toString())
                 .replyMarkup(keyboard)
                 .text(text)
                 .build();

@@ -82,15 +82,16 @@ public class AdminBot extends CommandBot {
     private void redact(Message message, String stringName) {
         sessions.put(message.getChatId(), "1" + stringName);
         InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
-        builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back").text("Назад").build()));
-        sendText(message, stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
+        builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back1").text("Назад").build()));
+        editMessage(message,stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
+        //sendText(message, stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
     }
 
     private void mailTo(Message message, String group) {
         sessions.put(message.getChatId(), "2" + group);
         InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
-        builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back").text("Назад").build()));
-        sendText(message, "Введіть текст для розсилки групі " + group, builder.build());
+        builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back2").text("Назад").build()));
+        editMessage(message, "Введіть текст для розсилки групі " + group, builder.build());
     }
 
     private void finishRedact(Message message, String stringName, String newValue) {
@@ -135,9 +136,9 @@ public class AdminBot extends CommandBot {
         if(data.startsWith("P")) {
             data = data.substring(1);
             if(data.startsWith("red")) {
-                editMessage(query,"Оберіть що змінити", redactPager.getPage(Integer.parseInt(data.substring(3))));
+                editMessage(query.getMessage(),"Оберіть що змінити", redactPager.getPage(Integer.parseInt(data.substring(3))));
             } else if(data.startsWith("clig")) {
-                editMessage(query,"Оберіть групу клієнтів", redactPager.getPage(Integer.parseInt(data.substring(3))));
+                editMessage(query.getMessage(),"Оберіть групу клієнтів", redactPager.getPage(Integer.parseInt(data.substring(3))));
             }
         } else if(data.startsWith("red")) {
             data = data.substring(3);
@@ -145,14 +146,12 @@ public class AdminBot extends CommandBot {
         } else if(data.startsWith("clig")) {
             data = data.substring(4);
             mailTo(query.getMessage(), data);
-        } else if(data.equals("Back")) {
-            DeleteMessage deleteMessage = DeleteMessage.builder().messageId(query.getMessage().getMessageId())
-                    .chatId(query.getMessage().getChatId() + "").build();
-            try {
-                execute(deleteMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+        } else if(data.equals("Back1")) {
+            editMessage(query.getMessage(), "Оберіть що змінити", redactPager.getPage(0));
+            sessions.remove(query.getMessage().getChatId());
+        } else if(data.equals("Back2")) {
+            sendText(query.getMessage(), "Оберіть групу клієнтів", clientsGroupPager.getPage(0));
+            sessions.remove(query.getMessage().getChatId());
         }
         answerQuery(query, "");
     }
