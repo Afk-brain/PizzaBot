@@ -63,8 +63,10 @@ public class Pager {
         for(int i = page * pageCup;i < Math.min(data.size(), (page + 1) * pageCup);i++) {
             builder.keyboardRow(Arrays.asList(createButton(dataPrefix + data.get(i), data.get(i))));
         }
-        builder.keyboardRow(Arrays.asList(createButton("P" + dataPrefix + (page - 1), "<<"),
-                createButton("pages", (page + 1) + "/" + pages), createButton("P" + dataPrefix + (page + 1), ">>")));
+        if(pages != 1) {
+            builder.keyboardRow(Arrays.asList(createButton("P" + dataPrefix + (page - 1), "<<"),
+                    createButton("pages", (page + 1) + "/" + pages), createButton("P" + dataPrefix + (page + 1), ">>")));
+        }
         return builder.build();
     }
 
