@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,8 +34,9 @@ public class Strings {
         return props.getProperty(key).replaceAll("_", " ");
     }
 
-    public Set<String> getAllKeys() {
-        return props.stringPropertyNames();
+    public List<String> getAllKeys() {
+        List<String> keys = props.stringPropertyNames().stream().map(key -> key.replaceAll("_", " ")).toList();
+        return keys;
     }
 
     public boolean set(String key, String value) {

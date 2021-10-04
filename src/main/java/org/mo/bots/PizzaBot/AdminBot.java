@@ -37,13 +37,12 @@ public class AdminBot extends CommandBot {
     public AdminBot(PizzaBot sender) throws IOException {
         this.sender = sender;
         strings = Strings.create();
-        Set<String> set = strings.getAllKeys();
-        redactPager = Pager.createPager(redactPagerName, set.stream().toList(), 5, "red");
+        redactPager = Pager.createPager(redactPagerName, strings.getAllKeys(), 5, "red", null);
         List<String> groups = new ArrayList<>();
         for(ClientGroup group : dataProvider.getClientGroups()) {
             groups.add(group.client_groups_name + " " + group.client_groups_id);
         }
-        clientsGroupPager = Pager.createPager(clientsGroupPagerName, groups, 5, "clig");
+        clientsGroupPager = Pager.createPager(clientsGroupPagerName, groups, 5, "clig", null);
     }
 
     @Override

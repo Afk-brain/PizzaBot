@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Pager {
 
@@ -17,6 +18,7 @@ public class Pager {
     private int pages;
     private List<String> data;
     private String dataPrefix;
+    private Function<String, String> dataFunction;
 
     public static boolean pagerExists(String name) {
         return pagers.containsKey(name);
@@ -26,7 +28,7 @@ public class Pager {
         return pagers.get(name);
     }
 
-    public static Pager createPager(String name, List<String> data, int pageCup, String dataPrefix) {
+    public static Pager createPager(String name, List<String> data, int pageCup, String dataPrefix, Function<String, String> dataFunction) {
         if(pagerExists(name)) {
             throw new IllegalArgumentException();
         }
@@ -34,6 +36,7 @@ public class Pager {
         pager.data = data;
         pager.pageCup = pageCup;
         pager.dataPrefix = dataPrefix;
+        pager.dataFunction = dataFunction;
         pager.calcPages();
         pagers.put(name, pager);
         return pager;
@@ -61,7 +64,11 @@ public class Pager {
             page = pages - 1;
         }
         for(int i = page * pageCup;i < Math.min(data.size(), (page + 1) * pageCup);i++) {
-            builder.keyboardRow(Arrays.asList(createButton(dataPrefix + data.get(i), data.get(i))));
+            String dataString = data.get(i);
+            if(dataFunction != null) {
+                dataString = dataFunction.apply(dataString);
+            }
+            builder.keyboardRow(Arrays.asList(createButton(dataPrefix + dataString, data.get(i))));
         }
         if(pages != 1) {
             builder.keyboardRow(Arrays.asList(createButton("P" + dataPrefix + (page - 1), "<<"),
