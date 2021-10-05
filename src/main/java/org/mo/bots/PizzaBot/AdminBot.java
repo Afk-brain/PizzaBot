@@ -29,15 +29,13 @@ public class AdminBot extends CommandBot {
     private static final String clientsGroupPagerName = "client";
     private Pager redactPager;
     private Pager clientsGroupPager;
-    private Strings strings;
     private Map<Long, String> sessions = new HashMap<>();
     private DataProvider dataProvider = new PosterProvider();
     private PizzaBot sender;
 
     public AdminBot(PizzaBot sender) throws IOException {
         this.sender = sender;
-        strings = Strings.create();
-        redactPager = Pager.createPager(redactPagerName, strings.getAllKeys(), 5, "red", null);
+        redactPager = Pager.createPager(redactPagerName, Strings.getAllKeys(), 5, "red", null);
         List<String> groups = new ArrayList<>();
         for(ClientGroup group : dataProvider.getClientGroups()) {
             groups.add(group.client_groups_name + " " + group.client_groups_id);
@@ -82,7 +80,7 @@ public class AdminBot extends CommandBot {
         sessions.put(message.getChatId(), "1" + stringName);
         InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
         builder.keyboardRow(Arrays.asList(InlineKeyboardButton.builder().callbackData("Back1").text("Назад").build()));
-        editMessage(message,stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
+        editMessage(message,stringName + ":\n" + Strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
         //sendText(message, stringName + ":\n" + strings.get(stringName) + "\nДля редагування введіть новий текст", builder.build());
     }
 
@@ -94,7 +92,7 @@ public class AdminBot extends CommandBot {
     }
 
     private void finishRedact(Message message, String stringName, String newValue) {
-        strings.set(stringName, newValue);
+        Strings.set(stringName, newValue);
         sendText(message, "Успішно відредаговано");
         sessions.remove(message.getChatId());
     }

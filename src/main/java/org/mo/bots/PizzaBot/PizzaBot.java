@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 public class PizzaBot extends CommandBot {
 
-    private Strings strings = Strings.create();
     private DataProvider dataProvider = new PosterProvider();
 
     public PizzaBot() throws IOException {
@@ -34,7 +33,7 @@ public class PizzaBot extends CommandBot {
                 .keyboardRow(createKeyboardRow("\uD83D\uDC3EНапої\uD83C\uDF7A", "\uD83D\uDC3EПіцца і закуски\uD83C\uDF55"))
                 .keyboardRow(createKeyboardRow("\uD83D\uDC3EКошик\uD83D\uDCE6", "\uD83D\uDC3EРезервування\uD83D\uDECB"))
                 .build();
-        sendText(message, strings.get("Привітання"), keyboard);
+        sendText(message, Strings.get("Привітання"), keyboard);
     }
 
     @BotCommand("\uD83D\uDC3EНапої\uD83C\uDF7A")
@@ -44,12 +43,12 @@ public class PizzaBot extends CommandBot {
 
     @BotCommand("\uD83D\uDC3EКошик\uD83D\uDCE6")
     public void bracket(Message message) {
-        sendText(message, strings.get("Порожній кошик"));
+        sendText(message, Strings.get("Порожній кошик"));
     }
 
     @BotCommand("\uD83D\uDC3CРекламка\uD83D\uDC3C")
     public void promo(Message message) {
-        sendText(message, strings.get("Реклама"));
+        sendText(message, Strings.get("Реклама"));
         dataProvider.getClientGroups();
     }
 

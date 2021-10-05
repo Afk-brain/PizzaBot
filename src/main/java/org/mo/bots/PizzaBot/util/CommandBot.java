@@ -34,7 +34,6 @@ public abstract class CommandBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        System.out.println(update);
         if(update.hasMessage() && update.getMessage().hasText()) {
             String input = update.getMessage().getText();
             methods.forEach((string, method) -> {
