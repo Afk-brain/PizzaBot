@@ -22,7 +22,6 @@ public class PosterProvider implements DataProvider {
     private final String token = System.getenv("PosterTestToken");
     private final HttpClient client = HttpClient.newHttpClient();
     Gson gson = new Gson();
-    Pattern tgIdPattern = Pattern.compile("tg-[0-9]+");
 
     @Override
     public User getUser(long id, String phone) {
@@ -37,12 +36,7 @@ public class PosterProvider implements DataProvider {
             answer = answer.replaceAll("\\{\"response\":\\[", "");
             answer = answer.replaceAll("]}", "");
             User user =  gson.fromJson(answer, User.class);
-            if(user.comment != null && !user.comment.isBlank()) {
-                Matcher matcher = tgIdPattern.matcher(user.comment);
-                if(matcher.find()) {
-                    user.chatId = Long.parseLong(matcher.group().split("-")[1]);
-                }
-            }
+            user.chatId = MySql.getTgId(user.phone);
             return user;
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,13 +84,7 @@ public class PosterProvider implements DataProvider {
                 if(!parts[i].endsWith("}")) parts[i] = parts[i] + "}";
                 System.out.println(parts[i]);
                 User user = gson.fromJson(parts[i], User.class);
-                System.out.println(user.comment + "Comment");
-                if(user.comment != null && !user.comment.isBlank()) {
-                    Matcher matcher = tgIdPattern.matcher(user.comment);
-                    if(matcher.find()) {
-                        user.chatId = Long.parseLong(matcher.group().split("-")[1]);
-                    }
-                }
+                user.chatId = MySql.getTgId(user.phone);
                 groups.add(user);
             }
             return groups;

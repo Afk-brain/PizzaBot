@@ -14,6 +14,7 @@ public class Strings {
 
 
     public static String get(String key) {
+        System.out.println("SELECT * FROM strings WHERE name='" + key + "';");
         ResultSet result = MySql.execute("SELECT * FROM strings WHERE name='" + key + "';");
         try {
             result.next();

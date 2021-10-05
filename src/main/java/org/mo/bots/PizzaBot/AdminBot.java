@@ -103,7 +103,7 @@ public class AdminBot extends CommandBot {
         long id = Long.parseLong(idString);
         List<User> users = dataProvider.getUsersInGroup(id);
         for(User user : users) {
-            System.out.println(user.chatId + " idddd");
+            if(user.chatId.isBlank()) continue;
             SendMessage sendMessage = SendMessage.builder()
                     .chatId(user.chatId + "")
                     .text(message.getText())

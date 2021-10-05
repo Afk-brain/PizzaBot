@@ -35,6 +35,18 @@ public class MySql {
         }
     }
 
+    public static String getTgId(String phone) {
+        ResultSet result = execute("SELECT *  FROM tgids WHERE phone='" + phone + "'");
+        try {
+            if(!result.next()) return "";
+            String id = result.getString("id");
+            return id;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     private MySql() {}
 
 }
